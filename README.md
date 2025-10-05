@@ -21,7 +21,7 @@ The recommended way to install this server for use with the Gemini CLI is using 
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/kraken-mcp.git
+    git clone https://github.com/oilst/kraken-mcp.git
     cd kraken-mcp
     ```
 
@@ -37,7 +37,6 @@ The recommended way to install this server for use with the Gemini CLI is using 
     ```bash
     fastmcp install gemini-cli kraken-server.py 
     ```
-    *Note: You may need to create a `requirements.txt` file with the content `requests` and `python-dotenv`.*
 
 ## Usage
 
