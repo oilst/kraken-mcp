@@ -30,7 +30,7 @@ OPEN_ORDERS_PATH = "/0/private/OpenOrders"
 AMEND_ORDER_PATH = "/0/private/AmendOrder"
 CANCEL_ALL_AFTER_PATH = "/0/private/CancelAllOrdersAfter"
 BALANCE_PATH = "/0/private/Balance"
-CLOSED_orders_PATH = "/0/private/ClosedOrders"
+CLOSED_ORDERS_PATH = "/0/private/ClosedOrders"
 TRADES_HISTORY_PATH = "/0/private/TradesHistory"
 
 API_KEY = os.getenv("KRAKEN_API_KEY")
@@ -40,6 +40,19 @@ mcp = FastMCP("Kraken Pro MCP")
 
 class KrakenError(RuntimeError):
     pass
+
+def _normalize_payload(d: dict) -> dict:
+    out = {}
+    for k, v in d.items():
+        if v is True:
+            out[k] = "true"
+        elif v is False:
+            out[k] = "false"
+        elif v is None:
+            continue  # drop unset optionals
+        else:
+            out[k] = v
+    return out
 
 def _require_keys():
     if not API_KEY or not API_SECRET:
@@ -77,6 +90,7 @@ def _sign(url_path: str, payload: dict) -> str:
 def _private_post(url_path: str, data: dict, timeout: float = 15.0) -> dict:
     _require_keys()
     url = KRAKEN_BASE + url_path
+    data = _normalize_payload(data)                     # <-- add this line
     sig, postdata = _sign(url_path, data)
     headers = {
         "API-Key": API_KEY,
@@ -97,7 +111,7 @@ def _nonce() -> str:
     # millisecond nonce as string (strictly increasing per key)
     return str(int(time.time() * 1000))
 
-#Trading API
+# ------------------ Trading API ------------------
 @mcp.tool
 def add_order(
     pair: str,
@@ -318,7 +332,7 @@ def recent_spreads(pair: str, since: int | None = None) -> dict:
     return _public_get(SPREAD_PATH, params)
 
 
-# ACCOUNT
+# ------------------ Account Data ------------------
 @mcp.tool
 def account_balance() -> dict:
     """
@@ -329,43 +343,25 @@ def account_balance() -> dict:
 
 
 @mcp.tool
-def closed_orders(
-    trades: bool = False,
-    userref: Optional[int] = None,
-    cl_ord_id: Optional[str] = None,
-    start: Optional[Union[int, str]] = None,   # unix ts (sec) OR order txid
-    end: Optional[Union[int, str]] = None,     # unix ts (sec) OR order txid
-    ofs: Optional[int] = None,                 # pagination offset (50/page)
-    closetime: Literal["open", "close", "both"] = "both",
-    consolidate_taker: Optional[bool] = None,  # consolidate by taker trade
-    without_count: bool = False,               # faster for many orders
-    rebase_multiplier: Optional[str] = None,   # for tokenized assets (xstocks)
-) -> dict:
-    """
-    Get Closed Orders (filled or cancelled). 50 results per page by default.
-    """
-    data = {
-        "nonce": _nonce(),
-        "trades": bool(trades),
-        "closetime": closetime,
-        "without_count": bool(without_count),
-    }
-    if userref is not None:
-        data["userref"] = int(userref)
-    if cl_ord_id is not None:
-        data["cl_ord_id"] = cl_ord_id
-    if start is not None:
-        data["start"] = str(start)
-    if end is not None:
-        data["end"] = str(end)
-    if ofs is not None:
-        data["ofs"] = int(ofs)
-    if consolidate_taker is not None:
-        data["consolidate_taker"] = bool(consolidate_taker)
-    if rebase_multiplier is not None:
-        data["rebase_multiplier"] = rebase_multiplier
-
-    return _private_post(CLOSED_orders_PATH, data)
+def closed_orders(trades: bool = False, userref: int | None = None,
+                  start: int | str | None = None, end: int | str | None = None,
+                  ofs: int | None = None, closetime: str | None = None,
+                  consolidate_taker: bool | None = None,
+                  without_count: bool | None = None,
+                  cl_ord_id: str | None = None,
+                  rebase_multiplier: str | None = None) -> dict:
+    data = {"nonce": _nonce()}
+    if trades is not None:              data["trades"] = trades
+    if userref is not None:             data["userref"] = int(userref)
+    if start is not None:               data["start"] = str(start)
+    if end is not None:                 data["end"] = str(end)
+    if ofs is not None:                 data["ofs"] = int(ofs)
+    if closetime is not None:           data["closetime"] = closetime  # 'open'|'close'|'both'
+    if consolidate_taker is not None:   data["consolidate_taker"] = consolidate_taker
+    if without_count is not None:       data["without_count"] = without_count
+    if cl_ord_id is not None:           data["cl_ord_id"] = cl_ord_id
+    if rebase_multiplier is not None:   data["rebase_multiplier"] = rebase_multiplier
+    return _private_post(CLOSED_ORDERS_PATH, data)
 
 @mcp.tool
 def trades_history(

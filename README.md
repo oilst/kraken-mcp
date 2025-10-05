@@ -35,7 +35,7 @@ The recommended way to install this server for use with the Gemini CLI is using 
 3.  **Install the server:**
     Run the following command to install the server, its dependencies, and make the tools available to the Gemini CLI:
     ```bash
-    fastmcp install gemini-cli kraken-server.py --with-requirements requirements.txt --env-file .env
+    fastmcp install gemini-cli kraken-server.py 
     ```
     *Note: You may need to create a `requirements.txt` file with the content `requests` and `python-dotenv`.*
 
