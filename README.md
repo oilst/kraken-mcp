@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="kraken_mcp_logo_alt2.png" alt="Kraken MCP logo" width="200">
+</p>
+
 # Kraken Pro MCP for Gemini CLI
 
 This project provides a [FastMCP](https://gofastmcp.com/) server that exposes the Kraken Pro REST API as a set of tools for the Gemini CLI. This allows you to interact with your Kraken account, trade, and access market data directly from your terminal using natural language.
