@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/oilst-kraken-mcp-badge.png)](https://mseep.ai/app/oilst-kraken-mcp)
+
 <p align="center">
   <img src="kraken_mcp_logo_alt2.png" alt="Kraken MCP logo" width="200">
 </p>
